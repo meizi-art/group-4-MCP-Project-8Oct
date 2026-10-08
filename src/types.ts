@@ -2,27 +2,34 @@ export type Sector =
   | 'Healthcare'
   | 'Technology'
   | 'Energy'
-  | 'Finance'
+  | 'Financials'
   | 'Consumer Goods'
   | 'Real Estate'
   | 'Industrials'
   | 'Crypto';
 
-export type RiskTolerance = 'Low' | 'Medium' | 'High';
+export type RiskAppetite = 'Low' | 'Medium' | 'High' | 'Extremely High';
+export type RiskTolerance = RiskAppetite;
 
 export type DigestFrequency = 'Daily' | 'Weekly';
 
 export interface UserPreferences {
-  sectors: Sector[];
-  country: string;
-  exchange: string;
-  returnMultiplier: number;
-  riskTolerance: RiskTolerance;
+  thematicInterests: Sector[];
+  vehicles: string[];
+  countriesAndExchanges: string[];
+  riskAppetite: RiskAppetite;
+  financialObjective: string;
   initialCapital: number;
   timeframe: string;
   email: string;
   digestFrequency: DigestFrequency;
   deliveryTime: string;
+  // Backward compatibility aliases
+  sectors?: Sector[];
+  country?: string;
+  exchange?: string;
+  returnMultiplier?: number;
+  riskTolerance?: RiskTolerance;
 }
 
 export interface PredictionMarketSignal {
@@ -51,31 +58,64 @@ export interface MarketDataSignal {
   signalType: string;
 }
 
+export interface TradeIdeaSource {
+  mcpServer: string;
+  item: string;
+}
+
 export interface TradeIdea {
   ticker: string;
-  company: string;
   exchange: string;
-  price: string;
-  change: string;
-  targetMultiplier: string;
+  direction?: 'long' | 'short';
+  company?: string;
+  price?: string;
+  change?: string;
+  targetMultiplier?: string;
   projectedPrice?: string;
-  confidence: string;
-  signalSummary: string;
-  predictionMarket: PredictionMarketSignal;
-  socialSentiment: SocialSentimentSignal;
-  newsCatalyst: NewsCatalystSignal;
-  marketSignal: MarketDataSignal;
+  confidence?: string;
+  signalSummary?: string;
+  thesis: string;
+  entryRationale?: string;
+  positionSizePercent?: number;
+  timeHorizon?: string;
+  keyRisk?: string;
+  sourcesUsed?: TradeIdeaSource[];
+  predictionMarket?: PredictionMarketSignal;
+  socialSentiment?: SocialSentimentSignal;
+  newsCatalyst?: NewsCatalystSignal;
+  marketSignal?: MarketDataSignal;
   allocationUSD?: number;
   stopLoss?: string;
   profitTarget?: string;
-  thesis: string;
+}
+
+export interface RiskCheckReport {
+  worstCaseDrawdown: string;
+  drivingIdea: string;
+  concentrationRisk: string;
+  isBreached: boolean;
+  breachRecommendation?: string;
+  disclaimer: string;
+}
+
+export interface EmailDeliveryStatus {
+  sent: boolean;
+  recipient: string;
+  message: string;
 }
 
 export interface GeneratedDigestResponse {
-  summary: string;
-  confidenceScore: string;
-  generatedAt: string;
+  date?: string;
+  summary?: string;
+  confidenceScore?: string;
+  generatedAt?: string;
   ideas: TradeIdea[];
+  riskCheck?: RiskCheckReport;
+  emailStatus?: EmailDeliveryStatus;
+  unavailableSources?: string[];
+  metrics?: {
+    callsMadeForDigest: number;
+  };
 }
 
 export interface IntelligenceSourceInfo {

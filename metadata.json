@@ -1,6 +1,6 @@
 {
-  "name": "DEALHUNTER X",
-  "description": "Hunting tomorrow's ten-baggers, today. Powered by crowd wisdom & public signals across prediction markets, social trends, Google & Naver news, and market data.",
+  "name": "Dealhunter X",
+  "description": "Find tomorrow's ten-baggers, today.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

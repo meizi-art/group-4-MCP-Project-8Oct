@@ -4,11 +4,35 @@ export const ALL_SECTORS: Sector[] = [
   'Healthcare',
   'Technology',
   'Energy',
-  'Finance',
+  'Financials',
   'Consumer Goods',
   'Real Estate',
   'Industrials',
   'Crypto'
+];
+
+export const FINANCIAL_VEHICLES = [
+  'Stocks',
+  'Options',
+  'Futures',
+  'Forex',
+  'Crypto / Derivatives'
+];
+
+export const MARKET_EXCHANGES = [
+  'US (NYSE / NASDAQ)',
+  'SGX (Singapore)',
+  'HKEX (Hong Kong)',
+  'LSE (London)',
+  'KRX (South Korea)',
+  'Global'
+];
+
+export const RISK_APPETITES = [
+  'Low',
+  'Medium',
+  'High',
+  'Extremely High'
 ];
 
 export const COUNTRIES = [

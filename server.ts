@@ -3,6 +3,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { GoogleGenAI } from '@google/genai';
+import { handleGenerateIdeas } from './lib/ideasHandler.js';
+import { handleHealthCheck } from './lib/healthHandler.js';
 
 dotenv.config();
 
@@ -13,6 +15,25 @@ const app = express();
 const port = parseInt(process.env.PORT || '3000', 10);
 
 app.use(express.json());
+
+// MasterPrompt standard routes (shared with Vercel serverless handlers)
+app.post('/api/ideas', async (req, res) => {
+  try {
+    const result = await handleGenerateIdeas(req.body);
+    return res.status(result.status).json(result.body);
+  } catch (err: any) {
+    return res.status(500).json({ error: err?.message || 'Internal Server Error' });
+  }
+});
+
+app.get('/api/health', async (_req, res) => {
+  try {
+    const health = await handleHealthCheck();
+    return res.status(health.status === 'error' ? 503 : 200).json(health);
+  } catch (err: any) {
+    return res.status(500).json({ error: err?.message || 'Health check error' });
+  }
+});
 
 // Default curated high-potential catalysts by sector & risk
 const SECTOR_DATABASE: Record<string, any[]> = {

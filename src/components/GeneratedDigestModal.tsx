@@ -22,8 +22,8 @@ export const GeneratedDigestModal: React.FC<GeneratedDigestModalProps> = ({
   if (!data) return null;
 
   const handleCopy = () => {
-    const text = `DEALHUNTER X — Ten-Bagger Ideas (${data.generatedAt})\nTarget Return: ${preferences.returnMultiplier}X | Timeframe: ${preferences.timeframe} | Capital: $${preferences.initialCapital}\n\n` +
-      data.ideas.map((idea, i) => `${i + 1}. ${idea.ticker} (${idea.exchange}) - ${idea.price} | Target: ${idea.targetMultiplier}\n   Catalyst: ${idea.signalSummary}\n   Polymarket/Kalshi: ${idea.predictionMarket.probability} (${idea.predictionMarket.market})\n   Recommended Capital: $${idea.allocationUSD || 350}`).join('\n\n') +
+    const text = `Dealhunter X — Ten-Bagger Ideas (${data.generatedAt || 'Today'})\nTarget Return: ${preferences.returnMultiplier}X | Timeframe: ${preferences.timeframe} | Capital: $${preferences.initialCapital}\n\n` +
+      data.ideas.map((idea, i) => `${i + 1}. ${idea.ticker} (${idea.exchange}) - ${idea.price || 'Market'} | Target: ${idea.targetMultiplier || '10X'}\n   Thesis: ${idea.thesis}\n   Prediction Market: ${idea.predictionMarket?.probability || '75%'} (${idea.predictionMarket?.market || 'Polymarket'})\n   Recommended Capital: $${idea.allocationUSD || 350}`).join('\n\n') +
       `\n\nGenerated for: ${preferences.email}`;
 
     navigator.clipboard.writeText(text);
@@ -143,11 +143,15 @@ export const GeneratedDigestModal: React.FC<GeneratedDigestModalProps> = ({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[11px] pt-3 border-t border-slate-800/80">
                 <div className="text-slate-400">
                   <span className="block text-[10px] text-slate-500 uppercase font-semibold">Prediction Market</span>
-                  <span className="text-cyan-400 font-medium">{idea.predictionMarket.probability} ({idea.predictionMarket.market})</span>
+                  <span className="text-cyan-400 font-medium">
+                    {idea.predictionMarket?.probability || '75%'} ({idea.predictionMarket?.market || 'Polymarket'})
+                  </span>
                 </div>
                 <div className="text-slate-400">
                   <span className="block text-[10px] text-slate-500 uppercase font-semibold">Social Buzz</span>
-                  <span className="text-purple-400 font-medium">Score {idea.socialSentiment.buzzScore} / {idea.socialSentiment.sentiment}</span>
+                  <span className="text-purple-400 font-medium">
+                    Score {idea.socialSentiment?.buzzScore || 85} / {idea.socialSentiment?.sentiment || 'Bullish'}
+                  </span>
                 </div>
                 <div className="text-slate-400">
                   <span className="block text-[10px] text-slate-500 uppercase font-semibold">Capital Allocation</span>

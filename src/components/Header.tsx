@@ -14,7 +14,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenSubscribe }) => {
           <div className="text-[#00E599] transition-transform group-hover:scale-110">
             <Zap className="w-5 h-5 fill-[#00E599]/20 text-[#00E599]" strokeWidth={2.5} />
           </div>
-          <span className="text-xl font-black tracking-wider text-white">DHX</span>
+          <span className="text-xl font-black tracking-wider text-white">Dealhunter X</span>
         </div>
 
         {/* Right Info & CTA */}
