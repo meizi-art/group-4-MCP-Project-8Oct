@@ -145,7 +145,7 @@ export default function App() {
   const handleGenerateAndEmailDigest = async () => {
     setIsGenerating(true);
     setServerError(null);
-    setGenerationStep('STAGE A: Gathering evidence across MCP servers (News, Polymarket, Reddit, FMP)...');
+    setGenerationStep('STAGE A: Querying MCP servers (past 1 hour only, max 100 searches, 2-minute deadline)...');
 
     const payload = {
       thematicInterests,
@@ -161,12 +161,12 @@ export default function App() {
 
     try {
       setTimeout(() => {
-        setGenerationStep('STAGE B: Running portfolio stress test across risk regimes...');
-      }, 900);
+        setGenerationStep('STAGE B: Running portfolio risk stress check across regimes...');
+      }, 1000);
 
       setTimeout(() => {
         setGenerationStep('STAGE C: Dispatching digest via Gmail MCP to your inbox...');
-      }, 1600);
+      }, 2000);
 
       const res = await fetch('/api/ideas', {
         method: 'POST',
@@ -419,8 +419,13 @@ export default function App() {
                   Top 3 Trade Ideas &amp; Stress Check
                 </h2>
               </div>
-              <div className="text-xs text-slate-400 font-mono bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
-                Generated: {digestResult.date || 'Today'} · MCP Calls: {digestResult.metrics?.callsMadeForDigest || 6}
+              <div className="flex flex-wrap items-center gap-2 text-xs text-slate-400 font-mono">
+                <span className="bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800">
+                  Past 1h Window · Top 100 Search Cap
+                </span>
+                <span className="bg-slate-900 px-3 py-1.5 rounded-lg border border-slate-800 text-[#00E599]">
+                  {digestResult.metrics?.executionDurationSeconds ? `${digestResult.metrics.executionDurationSeconds}s elapsed (<2m limit)` : 'Within 2m limit'}
+                </span>
               </div>
             </div>
 

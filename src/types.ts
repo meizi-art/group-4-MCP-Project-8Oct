@@ -115,6 +115,9 @@ export interface GeneratedDigestResponse {
   unavailableSources?: string[];
   metrics?: {
     callsMadeForDigest: number;
+    executionDurationSeconds?: number;
+    searchWindow?: string;
+    completedWithin2Minutes?: boolean;
   };
 }
 

@@ -147,12 +147,73 @@ export async function listServerTools(server: McpServerDefinition): Promise<{
 }
 
 /**
- * Call a specific tool on an MCP server.
+ * Prunes and caps MCP response data to prevent pulling too much information.
+ * Enforces top 100 searches/results and compact representation.
+ */
+export function pruneMcpData(raw: any, maxItems: number = 100): any {
+  if (!raw) return raw;
+
+  // If array, cap to top 100 searches
+  if (Array.isArray(raw)) {
+    return raw.slice(0, maxItems).map((item) => pruneMcpData(item, maxItems));
+  }
+
+  // If string, cap to 400 characters to prevent huge body dumps
+  if (typeof raw === 'string') {
+    return raw.length > 400 ? raw.substring(0, 400) + '...' : raw;
+  }
+
+  // If object, extract content / items and prune fields
+  if (typeof raw === 'object') {
+    if (Array.isArray(raw.content)) {
+      return {
+        ...raw,
+        content: raw.content.slice(0, maxItems).map((c: any) => pruneMcpData(c, maxItems))
+      };
+    }
+    if (Array.isArray(raw.items)) {
+      return {
+        ...raw,
+        items: raw.items.slice(0, maxItems).map((it: any) => pruneMcpData(it, maxItems))
+      };
+    }
+    if (Array.isArray(raw.articles)) {
+      return {
+        ...raw,
+        articles: raw.articles.slice(0, maxItems).map((a: any) => pruneMcpData(a, maxItems))
+      };
+    }
+    if (Array.isArray(raw.results)) {
+      return {
+        ...raw,
+        results: raw.results.slice(0, maxItems).map((r: any) => pruneMcpData(r, maxItems))
+      };
+    }
+
+    const compact: Record<string, any> = {};
+    const keys = Object.keys(raw).slice(0, 30); // max 30 keys
+    for (const key of keys) {
+      // Omit huge raw payloads
+      if (/raw|html|buffer|stream|payload/i.test(key) && typeof raw[key] === 'string' && raw[key].length > 500) {
+        compact[key] = raw[key].substring(0, 200) + '... (truncated)';
+      } else {
+        compact[key] = pruneMcpData(raw[key], maxItems);
+      }
+    }
+    return compact;
+  }
+
+  return raw;
+}
+
+/**
+ * Call a specific tool on an MCP server with 1-hour window and top 100 limit.
  */
 export async function callServerTool(
   server: McpServerDefinition,
   toolName: string,
-  toolArguments: Record<string, any>
+  toolArguments: Record<string, any>,
+  timeoutMs: number = 6000
 ): Promise<{ success: boolean; data?: any; error?: string }> {
   digestMetrics.totalCalls += 1;
 
@@ -162,7 +223,22 @@ export async function callServerTool(
 
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 6000);
+    const timeout = setTimeout(() => controller.abort(), Math.min(timeoutMs, 10000));
+
+    // Limit knowledge search to past 1 hour and top 100 items
+    const oneHourAgoIso = new Date(Date.now() - 3600 * 1000).toISOString();
+    const oneHourAgoUnix = Math.floor((Date.now() - 3600 * 1000) / 1000);
+
+    const boundedArguments: Record<string, any> = {
+      ...toolArguments,
+      limit: Math.min(Number(toolArguments.limit) || 100, 100),
+      maxResults: Math.min(Number(toolArguments.maxResults) || 100, 100),
+      top: Math.min(Number(toolArguments.top) || 100, 100),
+      timeframe: toolArguments.timeframe || '1h',
+      timeFilter: toolArguments.timeFilter || '1h',
+      publishedAfter: toolArguments.publishedAfter || oneHourAgoIso,
+      since: toolArguments.since || oneHourAgoUnix,
+    };
 
     const response = await fetch(server.url, {
       method: 'POST',
@@ -173,7 +249,7 @@ export async function callServerTool(
         method: 'tools/call',
         params: {
           name: toolName,
-          arguments: toolArguments
+          arguments: boundedArguments
         }
       }),
       signal: controller.signal
@@ -196,7 +272,10 @@ export async function callServerTool(
 
     const data = await response.json();
     digestMetrics.successfulCalls += 1;
-    return { success: true, data: data?.result };
+
+    // Prune data to top 100 and compact representations
+    const pruned = pruneMcpData(data?.result, 100);
+    return { success: true, data: pruned };
   } catch (err: any) {
     digestMetrics.failedCalls += 1;
     return { success: false, error: err?.message || 'Call failed' };
